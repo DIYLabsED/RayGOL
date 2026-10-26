@@ -1,0 +1,81 @@
+name: Build RayGOL
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    name: ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - os: ubuntu-latest
+            name: Linux
+            bin: raygol
+          - os: windows-latest
+            name: Windows
+            bin: raygol.exe
+          - os: macos-latest
+            name: macOS
+            bin: raygol
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # --- SETUP DEPENDENCIES ---
+      
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
+          git clone --depth 1 https://github.com/raysan5/raylib.git external_raylib
+          cd external_raylib/src
+          make PLATFORM=PLATFORM_DESKTOP
+
+      - name: Install macOS Dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install raylib
+
+      - name: Install Windows Dependencies (vcpkg / Manual clone)
+        if: runner.os == 'Windows'
+        run: |
+          git clone --depth 1 https://github.com/raysan5/raylib.git external_raylib
+          cd external_raylib/src
+          # Compile Raylib static library using MinGW (comes with GitHub Actions runner) or MSVC
+          # Using MinGW via make:
+          make PLATFORM=PLATFORM_DESKTOP CC=gcc
+
+      # --- COMPILATION ---
+
+      - name: Compile on Linux
+        if: runner.os == 'Linux'
+        run: |
+          gcc main.c -o ${{ matrix.platform.bin }} -Iexternal_raylib/src -Lexternal_raylib/src -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+
+      - name: Compile on macOS
+        if: runner.os == 'macOS'
+        run: |
+          # Homebrew installs raylib paths automatically or we can link via pkg-config
+          gcc main.c -o ${{ matrix.platform.bin }} $(pkg-config --cflags --libs raylib) -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+
+      - name: Compile on Windows (MinGW)
+        if: runner.os == 'Windows'
+        run: |
+          gcc main.c -o ${{ matrix.platform.bin }} -Iexternal_raylib/src -Lexternal_raylib/src -lraylib -lopengl32 -lgdi32 -lwinmm
+
+      # --- UPLOAD ARTIFACTS ---
+
+      - name: Upload Game Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: raygol-${{ runner.os }}
+          path: ${{ matrix.platform.bin }}
