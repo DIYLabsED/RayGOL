@@ -24,8 +24,10 @@ int paused = 1;
 float updateTimer = 0;
 float updateInterval = 0.05f;
 
+int drawGrid = 1;
 
-int countCellNeighbors(int x, int y){
+
+int countAliveNeighbors(int x, int y){
 
 	int count = 0;
 
@@ -110,7 +112,12 @@ void handleInput(){
 		randomizeCells();
 	}
 
+	if(IsKeyPressed(KEY_G)){
 
+		if(drawGrid) drawGrid = 0;
+		else drawGrid = 1;
+
+	}
 
 }
 
@@ -128,6 +135,19 @@ void drawCells(){
 
 			}
 		}
+	}
+
+	
+	if(drawGrid){
+
+		for(int x = 0; x < NUM_CELLS_X; x++){
+			DrawLine(x * cellWidth, 0, x * cellWidth, WINDOW_HEIGHT, GRID_COLOR);			
+		}
+
+		for(int y = 0; y < NUM_CELLS_Y; y++){
+			DrawLine(0, y * cellHeight, WINDOW_WIDTH, y * cellHeight, GRID_COLOR);			
+		}
+
 	}
 
 	EndDrawing();
@@ -156,7 +176,7 @@ int main(){
 				for(int x = 0; x < NUM_CELLS_X; x++){
 					for(int y = 0; y < NUM_CELLS_Y; y++){
 
-						int numNeighbors = countCellNeighbors(x, y);
+						int numNeighbors = countAliveNeighbors(x, y);
 						int alive = cells[x][y];
 
 						if(alive && (numNeighbors < 2 || numNeighbors > 3)){
@@ -182,7 +202,6 @@ int main(){
 		}
 
 		drawCells();
-
 
 	}
 
