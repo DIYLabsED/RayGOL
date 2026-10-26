@@ -4,8 +4,11 @@
 #include <raylib.h>
 
 
-#define WINDOW_WIDTH 800
+#define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 800
+
+#define GOL_WIDTH_END 800
+
 #define NUM_CELLS_X 50
 #define NUM_CELLS_Y 50
 
@@ -17,7 +20,7 @@ const Color GRID_COLOR      = {50, 50, 50, 255};
 int cells[NUM_CELLS_X][NUM_CELLS_Y];
 int nextCells[NUM_CELLS_X][NUM_CELLS_Y];
 
-float cellWidth = (float)WINDOW_WIDTH / NUM_CELLS_X;
+float cellWidth = (float)GOL_WIDTH_END / NUM_CELLS_X;
 float cellHeight = (float)WINDOW_HEIGHT / NUM_CELLS_Y;
 
 int paused = 1;
@@ -123,15 +126,11 @@ void handleInput(){
 
 void drawCells(){
 
-	BeginDrawing();
-
-	ClearBackground(DEAD_CELL_COLOR);
-
 	for(int x = 0; x < NUM_CELLS_X; x++){
 		for(int y = 0; y < NUM_CELLS_Y; y++){
 			if(cells[x][y]){
 
-				DrawRectangle(	(int)(x * cellWidth),	(int)(y * cellHeight),	(int)cellWidth, 	(int)cellHeight, 	LIVE_CELL_COLOR);
+				DrawRectangle((int)(x * cellWidth),	(int)(y * cellHeight), (int)cellWidth, (int)cellHeight,	LIVE_CELL_COLOR);
 
 			}
 		}
@@ -141,16 +140,14 @@ void drawCells(){
 	if(drawGrid){
 
 		for(int x = 0; x < NUM_CELLS_X; x++){
-			DrawLine(x * cellWidth, 0, x * cellWidth, WINDOW_HEIGHT, GRID_COLOR);			
+			DrawLine(x * cellWidth, 0, x * cellWidth, GOL_WIDTH_END, GRID_COLOR);			
 		}
 
 		for(int y = 0; y < NUM_CELLS_Y; y++){
-			DrawLine(0, y * cellHeight, WINDOW_WIDTH, y * cellHeight, GRID_COLOR);			
+			DrawLine(0, y * cellHeight, GOL_WIDTH_END, y * cellHeight, GRID_COLOR);			
 		}
 
 	}
-
-	EndDrawing();
 
 }
 
@@ -201,7 +198,10 @@ int main(){
 
 		}
 
+		BeginDrawing();
+		ClearBackground(DEAD_CELL_COLOR);
 		drawCells();
+		EndDrawing();
 
 	}
 
